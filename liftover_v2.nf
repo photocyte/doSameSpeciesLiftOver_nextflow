@@ -5,12 +5,14 @@ oldGenome = Channel.fromPath(params.old)
 newGenome = Channel.fromPath(params.new)
 gffFile = Channel.fromPath(params.gff)
 
+oldGenome.into {oldGenome_1 ; oldGenome_2}
+newGenome.into {newGenome_1 ; newGenome_2 ; newGenome_3 }
 gffFile.into{ gffFile_1 ; gffFile_2 }
 
 process convertFAto2bit_old {
     conda "ucsc-fatotwobit"
     input:
-    file fasta from oldGenome
+    file fasta from oldGenome_1
 
     output:
     file "${fasta}.2bit" into old_2bit 
@@ -24,7 +26,7 @@ process convertFAto2bit_old {
 process convertFAto2bit_new {
     conda "ucsc-fatotwobit"
     input:
-    file fasta from newGenome
+    file fasta from newGenome_1
 
     output:
     file "${fasta}.2bit" into new_2bit
@@ -35,18 +37,18 @@ process convertFAto2bit_new {
     """
 }
 
-old_2bit.into{ old_2bit_1 ; old_2bit_2 ; old_2bit_3 ; old_2bit_4}
-new_2bit.into{ new_2bit_1 ; new_2bit_2 ; new_2bit_3 }
+old_2bit.into{ old_2bit_1 ; old_2bit_2 ; old_2bit_3}
+new_2bit.into{ new_2bit_1 ; new_2bit_2 }
 
 process constructOocFile {
     conda "blat"
     input:
-      file old_2bit_4
+      file old_2bit from old_2bit_3
     output:
-      file "${old_2bit_4}.ooc" into ooc
+      file "${old_2bit}.ooc" into ooc
     script:
     """
-    blat ${old_2bit_4} /dev/null /dev/null -tileSize=11 -makeOoc=${old_2bit_4}.ooc -repMatch=300
+    blat ${old_2bit} /dev/null /dev/null -tileSize=11 -makeOoc=${old_2bit}.ooc -repMatch=300
     """
 }
 
@@ -54,29 +56,31 @@ process blat_align {
 conda "blat"
 input:
  file old_2bit from old_2bit_1
- file new_2bit from new_2bit_1
+ file newFasta from newGenome_3
  file ooc
 output:
 file "*.psl" into psls
-
+file "${newFasta}" into blatFasta
+file "${old_2bit}" into old2bitToaxtChain
 script:
 """
-blat ${old_2bit} ${new_2bit} -ooc=${ooc} -tileSize=11 -minIdentity=98 ${new_2bit}.psl -noHead -minScore=100
+blat ${old_2bit} ${newFasta} -ooc=${ooc} -tileSize=11 -minIdentity=98 ${newFasta}.psl -noHead -minScore=100
 """
 }
 
 process axtChain {
-conda "ucsc-axtchain"
+conda "ucsc-axtchain ucsc-fatotwobit"
 input:
  file pslFile from psls
- file old_2bit from old_2bit_2
- file new_2bit from new_2bit_2
+ file old_2bit from old2bitToaxtChain
+ file newFasta from blatFasta
 output:
  file "*.chain" into chains
 
 script:
 """
-axtChain -linearGap=medium -psl ${pslFile} ${old_2bit} ${new_2bit} ${pslFile}.chain
+faToTwoBit ${newFasta} ${newFasta}.2bit
+axtChain -linearGap=medium -psl ${pslFile} ${old_2bit} ${newFasta}.2bit ${pslFile}.chain
 """
 
 }
@@ -113,20 +117,23 @@ chainSort all.chain all.sorted.chain
 }
 
 process calculateChromInfo {
-conda "ucsc-twobitinfo"
+conda "seqkit"
 input:
- file new_2bit_3
- file old_2bit_3
+ file oldGenome from oldGenome_2
+ file newGenome from newGenome_2
 
 output:
- file "${new_2bit_3}.chromInfo" into newInfo
- file "${old_2bit_3}.chromInfo" into oldInfo
+ file "${oldGenome}.chromInfo" into oldInfo
+ file "${newGenome}.chromInfo" into newInfo
 script:
 """
  ##Equivalent command that can be run on FASTA files:
- ##seqkit fx2tab -nl ${fasta} | tr -s "\t" | sort -k2,2nr > ${fasta}.chromInfo
- twoBitInfo ${new_2bit_3} ${new_2bit_3}.chromInfo
- twoBitInfo ${old_2bit_3} ${old_2bit_3}.chromInfo
+ seqkit fx2tab -nl ${oldGenome} | tr -s "\t" | sort -k2,2nr > ${oldGenome}.chromInfo
+ seqkit fx2tab -nl ${newGenome} | tr -s "\t" | sort -k2,2nr > ${newGenome}.chromInfo
+
+ ##Old way that used ucsc-twobitinfo from a 2bit file.
+ ##twoBitInfo ${new_2bit} ${new_2bit}.chromInfo
+ ##twoBitInfo ${old_2bit} ${old_2bit}.chromInfo
 """
 
 }
