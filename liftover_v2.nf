@@ -6,7 +6,7 @@ newGenome = Channel.fromPath(params.new)
 gffFile = Channel.fromPath(params.gff)
 
 oldGenome.into {oldGenome_1 ; oldGenome_2}
-newGenome.into {newGenome_1 ; newGenome_2 ; newGenome_3 }
+newGenome.into { newGenome_1 ; newGenome_2 }
 gffFile.into{ gffFile_1 ; gffFile_2 }
 
 process convertFAto2bit_old {
@@ -23,27 +23,12 @@ process convertFAto2bit_old {
     """
 }
 
-process convertFAto2bit_new {
-    conda "ucsc-fatotwobit"
-    input:
-    file fasta from newGenome_1
-
-    output:
-    file "${fasta}.2bit" into new_2bit
-
-    script:
-    """
-    faToTwoBit ${fasta} ${fasta}.2bit    
-    """
-}
-
-old_2bit.into{ old_2bit_1 ; old_2bit_2 ; old_2bit_3}
-new_2bit.into{ new_2bit_1 ; new_2bit_2 }
+old_2bit.into{ old_2bit_1 ; old_2bit_2 }
 
 process constructOocFile {
     conda "blat"
     input:
-      file old_2bit from old_2bit_3
+      file old_2bit from old_2bit_2
     output:
       file "${old_2bit}.ooc" into ooc
     script:
@@ -56,12 +41,10 @@ process blat_align {
 conda "blat"
 input:
  file old_2bit from old_2bit_1
- file newFasta from newGenome_3
+ file newFasta from newGenome_2
  file ooc
 output:
-file "*.psl" into psls
-file "${newFasta}" into blatFasta
-file "${old_2bit}" into old2bitToaxtChain
+ set file("${newFasta}.psl"), file("${newFasta}"), file("${old_2bit}") into axtChainCmds
 script:
 """
 blat ${old_2bit} ${newFasta} -ooc=${ooc} -tileSize=11 -minIdentity=98 ${newFasta}.psl -noHead -minScore=100
@@ -71,11 +54,9 @@ blat ${old_2bit} ${newFasta} -ooc=${ooc} -tileSize=11 -minIdentity=98 ${newFasta
 process axtChain {
 conda "ucsc-axtchain ucsc-fatotwobit"
 input:
- file pslFile from psls
- file old_2bit from old2bitToaxtChain
- file newFasta from blatFasta
+ set file(pslFile),file(newFasta),file(old_2bit) from axtChainCmds
 output:
- file "*.chain" into chains
+ file "${pslFile}.chain" into chains
 
 script:
 """
@@ -104,13 +85,12 @@ chainMergeSort ${chainFile} | chainSplit chainMerge stdin -lump=50
 process chainSort {
 conda "ucsc-chainsort"
 input:
- file chainFile from sortMergedChains
+ file chainFile from sortMergedChains.collectFile(name: 'all.chain')
 
 output:
  file "all.sorted.chain" into allSortedChain_1, allSortedChain_2
 script:
 """
-cat *.chain > all.chain
 chainSort all.chain all.sorted.chain
 """
 
@@ -120,7 +100,7 @@ process calculateChromInfo {
 conda "seqkit"
 input:
  file oldGenome from oldGenome_2
- file newGenome from newGenome_2
+ file newGenome from newGenome_1
 
 output:
  file "${oldGenome}.chromInfo" into oldInfo
@@ -132,8 +112,8 @@ script:
  seqkit fx2tab -nl ${newGenome} | tr -s "\t" | sort -k2,2nr > ${newGenome}.chromInfo
 
  ##Old way that used ucsc-twobitinfo from a 2bit file.
- ##twoBitInfo ${new_2bit} ${new_2bit}.chromInfo
- ##twoBitInfo ${old_2bit} ${old_2bit}.chromInfo
+ ##twoBitInfo new.2bit new.2bit.chromInfo
+ ##twoBitInfo old.2bit old.2bit.chromInfo
 """
 
 }
