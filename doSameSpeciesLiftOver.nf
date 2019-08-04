@@ -1,13 +1,14 @@
 params.old = "old.fasta"
 params.new = "new.fasta"
 params.gff = "Pnm1.1s2685p1_gmap_align.out.gff3"
+
 oldGenome = Channel.fromPath(params.old)
 newGenome = Channel.fromPath(params.new)
 gffFile = Channel.fromPath(params.gff)
 
 oldGenome.into {oldGenome_1 ; oldGenome_2}
 newGenome.into { newGenome_1 ; newGenome_2 }
-gffFile.into{ gffFile_1 ; gffFile_2 }
+//gffFile.into{ gffFile_1 ; gffFile_2 }
 
 newGenome_2.splitFasta(by:1,file:true).set{fastaChunks}
 
@@ -106,8 +107,7 @@ input:
  file newGenome from newGenome_1
 
 output:
- file "${oldGenome}.chromInfo" into oldInfo
- file "${newGenome}.chromInfo" into newInfo
+ set file("${oldGenome}.chromInfo"),file("${newGenome}.chromInfo") into chromInfos
 script:
 """
  ##Equivalent command that can be run on FASTA files:
@@ -125,8 +125,7 @@ process chainNet {
 conda "ucsc-chainnet"
 input:
  file allSortedChain from allSortedChain_1
- file oldInfo
- file newInfo
+ set file(oldInfo),file(newInfo) from chromInfos
 output:
  file "all.net" into netFile
 script:
@@ -141,7 +140,7 @@ input:
  file netFile
  file allSortedChain_2
 output:
- file "final.liftOver" into liftOverFile_1, liftOverFile_2
+ file "final.liftOver" into liftOverFile_2
 script:
 """
 netChainSubset ${netFile} ${allSortedChain_2} final.liftOver
@@ -169,7 +168,7 @@ netChainSubset ${netFile} ${allSortedChain_2} final.liftOver
 process ucsc_liftover {
 conda "ucsc-liftover"
 input:
- file gffFile from gffFile_2
+ file gffFile
  file liftOverFile from liftOverFile_2
 output:
  file "ucsc-lifted_${gffFile}" into ucsc_lifted_gff
