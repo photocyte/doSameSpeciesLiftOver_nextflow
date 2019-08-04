@@ -9,7 +9,7 @@ oldGenome.into {oldGenome_1 ; oldGenome_2}
 newGenome.into { newGenome_1 ; newGenome_2 }
 gffFile.into{ gffFile_1 ; gffFile_2 }
 
-newGenome_2.splitFasta(by:100,file:true).set{fastaChunks}
+newGenome_2.splitFasta(by:1,file:true).set{fastaChunks}
 
 process convertFAto2bit_old {
     conda "ucsc-fatotwobit"
@@ -72,7 +72,7 @@ axtChain -linearGap=medium -psl ${pslFile} ${old_2bit} ${newFasta}.2bit ${pslFil
 process chainMerge {
 conda "ucsc-chainmergesort ucsc-chainsplit"
 input:
- file chainFile from chains
+ file chainFile from chains.collect()
 
 output:
  file "chainMerge/*.chain" into sortMergedChains
@@ -148,23 +148,23 @@ netChainSubset ${netFile} ${allSortedChain_2} final.liftOver
 """
 }
 
-process crossmap_liftover {
-conda "crossmap=0.3.6"
-input:
- file gffFile from gffFile_1
- file liftOverFile from liftOverFile_1
-output:
- file "crossmap-lifted_${gffFile}" into crossmap_lifted_gff
-script:
-"""
-Crossmap.py -v
-CrossMap.py gff ${liftOverFile} ${gffFile} lifted_unsorted_unfixed_${gffFile}
-###Below line is to fix a bug in crossmap where it outputs coordinates as floats rather than integers
-##Also bug where certain scores for features were set to null?
-cat lifted_unsorted_unfixed_${gffFile} | sed \$'s/.0\t/\t/g' | sed \$'s/\t\t/\t0\t/g'> crossmap-lifted_${gffFile}
-###
-"""
-}
+//process crossmap_liftover {
+//conda "crossmap=0.3.6"
+//input:
+// file gffFile from gffFile_1
+// file liftOverFile from liftOverFile_1
+//output:
+// file "crossmap-lifted_${gffFile}" into crossmap_lifted_gff
+//script:
+//"""
+//Crossmap.py -v
+//CrossMap.py gff ${liftOverFile} ${gffFile} lifted_unsorted_unfixed_${gffFile}
+//###Below line is to fix a bug in crossmap where it outputs coordinates as floats rather than integers
+//##Also bug where certain scores for features were set to null?
+//cat lifted_unsorted_unfixed_${gffFile} | sed \$'s/.0\t/\t/g' | sed \$'s/\t\t/\t0\t/g'> crossmap-lifted_${gffFile}
+//###
+//"""
+//}
 
 process ucsc_liftover {
 conda "ucsc-liftover"
@@ -180,21 +180,21 @@ liftOver -gff ${gffFile} ${liftOverFile} ucsc-lifted_${gffFile} unmapped_${gffFi
 """
 }
 
-ucsc_lifted_gff.mix(crossmap_lifted_gff).set{liftedGffUnsorted}
+//ucsc_lifted_gff.mix(crossmap_lifted_gff).set{liftedGffUnsorted}
 
 process sort_gff {
 publishDir './output/'
 conda "genometools"
 input:
- file liftedGffUnsorted
+ file gff from ucsc_lifted_gff
 output:
- file "srt_${liftedGffUnsorted}"
-tag "${liftedGffUnsorted}" 
+ file "srt_${gff}"
+tag "${gff}" 
 script:
 """
- THENAME=${liftedGffUnsorted}
+ THENAME=${gff}
  NEWNAME=lifted_\${THENAME#lifted_unsorted_}
- gt gff3 -tidy -sort -retainids <(cat ${liftedGffUnsorted} | grep -v "#") > srt_${liftedGffUnsorted}
+ gt gff3 -tidy -sort -retainids <(cat ${gff} | grep -v "#") > srt_${gff}
 """
 }
 
