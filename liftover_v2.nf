@@ -1,5 +1,5 @@
-params.old = "old.Pnm1.1_ph1.fasta"
-params.new = "new.Pnm1.1_ph1.fasta"
+params.old = "old.fasta"
+params.new = "new.fasta"
 params.gff = "Pnm1.1s2685p1_gmap_align.out.gff3"
 oldGenome = Channel.fromPath(params.old)
 newGenome = Channel.fromPath(params.new)
@@ -8,6 +8,8 @@ gffFile = Channel.fromPath(params.gff)
 oldGenome.into {oldGenome_1 ; oldGenome_2}
 newGenome.into { newGenome_1 ; newGenome_2 }
 gffFile.into{ gffFile_1 ; gffFile_2 }
+
+newGenome_2.splitFasta(by:100,file:true).set{fastaChunks}
 
 process convertFAto2bit_old {
     conda "ucsc-fatotwobit"
@@ -37,17 +39,18 @@ process constructOocFile {
     """
 }
 
+fastaChunks.combine(old_2bit_1).combine(ooc).set{blatCmds}
+
 process blat_align {
 conda "blat"
+memory '3 GB'
 input:
- file old_2bit from old_2bit_1
- file newFasta from newGenome_2
- file ooc
+ set file(fastaChunk),file(old_2bit),file(ooc) from blatCmds
 output:
- set file("${newFasta}.psl"), file("${newFasta}"), file("${old_2bit}") into axtChainCmds
+ set file("${fastaChunk}.psl"), file("${fastaChunk}"), file("${old_2bit}") into axtChainCmds
 script:
 """
-blat ${old_2bit} ${newFasta} -ooc=${ooc} -tileSize=11 -minIdentity=98 ${newFasta}.psl -noHead -minScore=100
+blat ${old_2bit} ${fastaChunk} -ooc=${ooc} -tileSize=11 -minIdentity=98 ${fastaChunk}.psl -noHead -minScore=100
 """
 }
 
