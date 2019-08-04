@@ -123,6 +123,8 @@ output:
  file "${old_2bit_3}.chromInfo" into oldInfo
 script:
 """
+ ##Equivalent command that can be run on FASTA files:
+ ##seqkit fx2tab -nl ${fasta} | tr -s "\t" | sort -k2,2nr > ${fasta}.chromInfo
  twoBitInfo ${new_2bit_3} ${new_2bit_3}.chromInfo
  twoBitInfo ${old_2bit_3} ${old_2bit_3}.chromInfo
 """
