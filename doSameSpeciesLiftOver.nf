@@ -1,3 +1,4 @@
+##Inspired by: https://genome-source.gi.ucsc.edu/gitlist/kent.git/raw/master/src/hg/utils/automation/doSameSpeciesLiftOver.pl
 params.old = "old.fasta"
 params.new = "new.fasta"
 params.gff = "Pnm1.1s2685p1_gmap_align.out.gff3"
