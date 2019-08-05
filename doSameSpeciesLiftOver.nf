@@ -78,7 +78,7 @@ memory '4 GB'
 input:
  set file(originalFasta),file(liftupFile),file(fastaSubChunk),file(old_2bit),file(ooc) from blatCmds
 output:
- set file("${fastaSubChunk}.psl") into axtChainCmds
+ file "${fastaSubChunk}.psl" into axtChainCmds
 tag "${fastaSubChunk}"
 script:
 """
