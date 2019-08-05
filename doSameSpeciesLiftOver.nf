@@ -1,11 +1,13 @@
 //Inspired by: https://genome-source.gi.ucsc.edu/gitlist/kent.git/raw/master/src/hg/utils/automation/doSameSpeciesLiftOver.pl
+//And this: 
 //Also this: https://iamphioxus.org/2013/06/25/using-liftover-to-convert-genome-assembly-coordinates/
 params.old = "GCF_000004515.3_V1.1_genomic.fna.gz"
 params.new = "GCA_000004515.3_Glycine_max_v2.0_genomic.fna.gz"
 params.gff = "Pnm1.1s2685p1_gmap_align.out.gff3"
 params.splitDepth = 100 //number of sections per blat invocation.
-params.splitSize = 4000 //length of a section, in base pairs. 5000 bp is the maximum size allowed for blat -fastmap
+params.splitSize = 2500 //length of a section, in base pairs. 5000 bp is the maximum size allowed for blat -fastmap
 params.recordSplit = 1
+params.extra = 2500
 
 oldGenome = Channel.fromPath(params.old)
 newGenome = Channel.fromPath(params.new)
@@ -13,8 +15,8 @@ gffFile = Channel.fromPath(params.gff)
 
 gffFile.into{ gffFile_1 ; gffFile_2 }
 
-oldGenome.into {oldGenome_1 ; oldGenome_2}
-newGenome.into { newGenome_1 ; newGenome_2 }
+oldGenome.into {oldGenome_1 ; oldGenome_2 ; oldGenome_3 }
+newGenome.into { newGenome_1 ; newGenome_2 ; newGenome_3 }
 
 //Split multi-FASTA file into muliple files with typically one FASTA record per file
 newGenome_2.splitFasta(by:params.recordSplit,file:true).set{fastaChunks}
@@ -56,7 +58,7 @@ output:
 tag "${fastaChunk}"
 script:
 """
-faSplit size ${fastaChunk} ${params.splitSize} ${fastaChunk}.subsplit -lift=${fastaChunk}.lft -oneFile -extra=1000
+faSplit size ${fastaChunk} ${params.splitSize} ${fastaChunk}.subsplit -lift=${fastaChunk}.lft -oneFile -extra=${params.extra}
 """
 }
 
@@ -76,11 +78,16 @@ memory '4 GB'
 input:
  set file(originalFasta),file(liftupFile),file(fastaSubChunk),file(old_2bit),file(ooc) from blatCmds
 output:
- set file("${fastaSubChunk}.psl"), file("${originalFasta}"), file("${old_2bit}") into axtChainCmds
+ set file("${fastaSubChunk}.psl") into axtChainCmds
 tag "${fastaSubChunk}"
 script:
 """
-blat ${old_2bit} ${fastaSubChunk} -ooc=${ooc} -tileSize=11 -minIdentity=98 -noHead -minScore=100 -fastMap ${fastaSubChunk}.subsplit.psl
+if [ "${params.splitSize}" -lt "4000" ]; then
+  blat ${old_2bit} ${fastaSubChunk} -ooc=${ooc} -tileSize=11 -minIdentity=98 -noHead -minScore=100 -fastMap ${fastaSubChunk}.subsplit.psl
+else
+  blat ${old_2bit} ${fastaSubChunk} -ooc=${ooc} -tileSize=11 -minIdentity=98 -noHead -minScore=100 ${fastaSubChunk}.subsplit.psl
+fi
+
 liftUp -pslQ ${fastaSubChunk}.psl ${liftupFile} warn ${fastaSubChunk}.subsplit.psl
 
 ##cleanup some temporary files
@@ -91,14 +98,15 @@ liftUp -pslQ ${fastaSubChunk}.psl ${liftupFile} warn ${fastaSubChunk}.subsplit.p
 process axtChain {
 conda "ucsc-axtchain ucsc-fatotwobit"
 input:
- set file(pslFile),file(newFasta),file(old_2bit) from axtChainCmds
+ file pslFile from axtChainCmds.collectFile(name:"merged.psl",keepHeader:true,skip:5)
+ file oldFasta from oldGenome_3
+ file newFasta from newGenome_3
 output:
  file "${pslFile}.chain" into chains
 tag "${pslFile}"
 script:
 """
-faToTwoBit ${newFasta} ${newFasta}.2bit
-axtChain -linearGap=medium -psl ${pslFile} ${old_2bit} ${newFasta}.2bit ${pslFile}.chain
+axtChain -linearGap=medium -faQ -faT -psl ${pslFile} ${oldFasta} ${newFasta} ${pslFile}.chain
 """
 
 }
@@ -169,7 +177,7 @@ chainNet ${allSortedChain} ${oldInfo} ${newInfo} all.net /dev/null
 
 process produceLiftOverFile {
 conda "ucsc-netchainsubset"
-publishDir './liftover_output/'
+publishDir './liftover_output/',mode:'copy',overwrite:true
 input:
  file netFile
  file allSortedChain_2
@@ -206,7 +214,7 @@ input:
  file liftOverFile from liftOverFile_2
 output:
  file "ucsc-lifted_${gffFile}" into ucsc_lifted_gff
- file "unmapped_${gffFile}"
+ file "unmapped_${gffFile}" into unmapped_gff
 script:
 """
 liftOver -gff ${gffFile} ${liftOverFile} ucsc-lifted_${gffFile} unmapped_${gffFile}
@@ -216,12 +224,14 @@ liftOver -gff ${gffFile} ${liftOverFile} ucsc-lifted_${gffFile} unmapped_${gffFi
 //ucsc_lifted_gff.mix(crossmap_lifted_gff).set{liftedGffUnsorted}
 
 process sort_gff {
-publishDir './liftover_output/'
+publishDir './liftover_output/',mode:'copy',overwrite:true
 conda "genometools"
 input:
  file gff from ucsc_lifted_gff
+ file unmapped from unmapped_gff
 output:
  file "srt_${gff}" into final_gff
+ file "${unmapped}"
 tag "${gff}" 
 script:
 """
@@ -231,13 +241,13 @@ script:
 """
 }
 
-process compare_gffs {
-echo true
-input:
- file ogff from gffFile_2
- file fgff from final_gff
-script:
-"""
-diff ${ogff} ${fgff}
-"""
-}
+//process compare_gffs {
+//echo true
+//input:
+// file ogff from gffFile_2
+// file fgff from final_gff
+//script:
+//"""
+//diff ${ogff} ${fgff}
+//"""
+//}
