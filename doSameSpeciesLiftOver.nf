@@ -4,17 +4,19 @@ params.old = "GCF_000004515.3_V1.1_genomic.fna.gz"
 params.new = "GCA_000004515.3_Glycine_max_v2.0_genomic.fna.gz"
 params.gff = "Pnm1.1s2685p1_gmap_align.out.gff3"
 params.splitDepth = 100 //number of sections per blat invocation.
-params.splitSize = 5000 //in base pairs, per section
+params.splitSize = 4000 //length of a section, in base pairs. 5000 bp is the maximum size allowed for blat -fastmap
 params.recordSplit = 1
 
 oldGenome = Channel.fromPath(params.old)
 newGenome = Channel.fromPath(params.new)
 gffFile = Channel.fromPath(params.gff)
 
+gffFile.into{ gffFile_1 ; gffFile_2 }
+
 oldGenome.into {oldGenome_1 ; oldGenome_2}
 newGenome.into { newGenome_1 ; newGenome_2 }
 
-//Split multi-FASTA file into muliple files with one FASTA record per file
+//Split multi-FASTA file into muliple files with typically one FASTA record per file
 newGenome_2.splitFasta(by:params.recordSplit,file:true).set{fastaChunks}
 
 process convertFAto2bit_old {
@@ -51,9 +53,10 @@ input:
  file fastaChunk from fastaChunks
 output:
  set file("${fastaChunk}"), file("${fastaChunk}.lft"),file("${fastaChunk}.subsplit.fa") into subsplitFasta_liftUp
+tag "${fastaChunk}"
 script:
 """
-faSplit size ${fastaChunk} ${params.splitSize} ${fastaChunk}.subsplit -lift=${fastaChunk}.lft -oneFile
+faSplit size ${fastaChunk} ${params.splitSize} ${fastaChunk}.subsplit -lift=${fastaChunk}.lft -oneFile -extra=1000
 """
 }
 
@@ -91,6 +94,7 @@ input:
  set file(pslFile),file(newFasta),file(old_2bit) from axtChainCmds
 output:
  file "${pslFile}.chain" into chains
+tag "${pslFile}"
 script:
 """
 faToTwoBit ${newFasta} ${newFasta}.2bit
@@ -198,7 +202,7 @@ netChainSubset ${netFile} ${allSortedChain_2} final.liftOver
 process ucsc_liftover {
 conda "ucsc-liftover"
 input:
- file gffFile
+ file gffFile from gffFile_1
  file liftOverFile from liftOverFile_2
 output:
  file "ucsc-lifted_${gffFile}" into ucsc_lifted_gff
@@ -217,7 +221,7 @@ conda "genometools"
 input:
  file gff from ucsc_lifted_gff
 output:
- file "srt_${gff}"
+ file "srt_${gff}" into final_gff
 tag "${gff}" 
 script:
 """
@@ -227,3 +231,13 @@ script:
 """
 }
 
+process compare_gffs {
+echo true
+input:
+ file ogff from gffFile_2
+ file fgff from final_gff
+script:
+"""
+diff ${ogff} ${fgff}
+"""
+}
