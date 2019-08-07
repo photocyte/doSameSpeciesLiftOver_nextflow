@@ -1,13 +1,13 @@
 //Inspired by: https://genome-source.gi.ucsc.edu/gitlist/kent.git/raw/master/src/hg/utils/automation/doSameSpeciesLiftOver.pl
 //And this: 
 //Also this: https://iamphioxus.org/2013/06/25/using-liftover-to-convert-genome-assembly-coordinates/
-params.old = "GCF_000004515.3_V1.1_genomic.fna.gz"
-params.new = "GCA_000004515.3_Glycine_max_v2.0_genomic.fna.gz"
-params.gff = "Pnm1.1s2685p1_gmap_align.out.gff3"
-params.splitDepth = 100 //number of sections per blat invocation.
-params.splitSize = 2500 //length of a section, in base pairs. 5000 bp is the maximum size allowed for blat -fastmap
-params.recordSplit = 1
-params.extra = 2500
+params.old = "old.fasta"
+params.new = "new2.fasta"
+params.gff = "Phengodes_nigromaculata.gff3"
+params.splitDepth = 100000000 //number of sections per blat invocation. 100 for typical invocation (if chainMerge worked properly). Smaller for more parallelization. Larger to disable.
+params.splitSize = 100000000 //length of a section, in base pairs. 5000 bp is the maximum size allowed for blat -fastmap. Interacts with param.extra. Larger to disable.
+params.recordSplit = 1 //Split MultiFasta into files with this many fasta records. Default = 1 .  Higher for less parallelization. 
+params.extra = 0 //Extra bases for splitFA for overlaps.  E.g. if splitsize is 2500, and extra is 2500, splitFA will make 5000 sections that overlap 2500 bp. 0 to disable.
 
 oldGenome = Channel.fromPath(params.old)
 newGenome = Channel.fromPath(params.new)
@@ -15,7 +15,7 @@ gffFile = Channel.fromPath(params.gff)
 
 gffFile.into{ gffFile_1 ; gffFile_2 }
 
-oldGenome.into {oldGenome_1 ; oldGenome_2 ; oldGenome_3 }
+oldGenome.into {oldGenome_1 ; oldGenome_2 ; oldGenome_3 ; oldGenome_4 }
 newGenome.into { newGenome_1 ; newGenome_2 ; newGenome_3 }
 
 //Split multi-FASTA file into muliple files with typically one FASTA record per file
@@ -83,9 +83,9 @@ tag "${fastaSubChunk}"
 script:
 """
 if [ "${params.splitSize}" -lt "4000" ]; then
-  blat ${old_2bit} ${fastaSubChunk} -ooc=${ooc} -tileSize=11 -minIdentity=98 -noHead -minScore=100 -fastMap ${fastaSubChunk}.subsplit.psl
+  blat ${old_2bit} ${fastaSubChunk} -ooc=${ooc} -tileSize=11 -minIdentity=98 -noHead -minScore=100 -fastMap -extendThroughN ${fastaSubChunk}.subsplit.psl
 else
-  blat ${old_2bit} ${fastaSubChunk} -ooc=${ooc} -tileSize=11 -minIdentity=98 -noHead -minScore=100 ${fastaSubChunk}.subsplit.psl
+  blat ${old_2bit} ${fastaSubChunk} -ooc=${ooc} -tileSize=11 -minIdentity=98 -noHead -minScore=100 -extendThroughN ${fastaSubChunk}.subsplit.psl
 fi
 
 liftUp -pslQ ${fastaSubChunk}.psl ${liftupFile} warn ${fastaSubChunk}.subsplit.psl
@@ -152,8 +152,8 @@ output:
 script:
 """
  ##Equivalent command that can be run on FASTA files:
- seqkit fx2tab -nl ${oldGenome} | tr -s "\t" | sort -k2,2nr > ${oldGenome}.chromInfo
- seqkit fx2tab -nl ${newGenome} | tr -s "\t" | sort -k2,2nr > ${newGenome}.chromInfo
+ seqkit fx2tab --only-id -nl ${oldGenome} | tr -s "\t" | sort -k2,2nr > ${oldGenome}.chromInfo
+ seqkit fx2tab --only-id -nl ${newGenome} | tr -s "\t" | sort -k2,2nr > ${newGenome}.chromInfo
 
  ##Old way that used ucsc-twobitinfo from a 2bit file.
  ##twoBitInfo new.2bit new.2bit.chromInfo
@@ -207,10 +207,43 @@ netChainSubset ${netFile} ${allSortedChain_2} final.liftOver
 //"""
 //}
 
+gffFile_1.combine(oldGenome_4).set{normalizeCmds}
+
+process normalizeGff {
+publishDir './liftover_output/',mode:'copy',overwrite:true
+input:
+ set file(gff),file(fasta) from normalizeCmds
+output:
+ file "target.${gff}.gff3" into normalizedGff
+ file "ignored.${gff}.gff3"
+script:
+"""
+seqkit fx2tab --only-id -n ${fasta} | tr -s "\t" > target_scaffolds.txt
+echo "##gff-version 3" >> target_scaffolds.txt
+gt gff3 -tidy -sort -retainids -fixregionboundaries ${gff} > normalized.${gff}.gff3 
+grep -f target_scaffolds.txt normalized.${gff}.gff3 > target.${gff}.gff3
+grep -v -f target_scaffolds.txt normalized.${gff}.gff3 > ignored.${gff}.gff3
+"""
+}
+
+//process ucsc_gff3togenepred {
+//conda "ucsc-gff3togenepred genometools"
+//input:
+// file gffFile from gffFile_1
+//output:
+// file "${gffFile}.gp" into gpFile
+//script:
+//"""
+//
+//gt gff3 -tidy -sort -retainids -fixregionboundaries ${gffFile} > tmp.gff3
+//gff3ToGenePred tmp.gff3 ${gffFile}.gp
+//"""
+//}
+
 process ucsc_liftover {
 conda "ucsc-liftover"
 input:
- file gffFile from gffFile_1
+ file gffFile from normalizedGff
  file liftOverFile from liftOverFile_2
 output:
  file "ucsc-lifted_${gffFile}" into ucsc_lifted_gff
@@ -237,17 +270,17 @@ script:
 """
  THENAME=${gff}
  NEWNAME=lifted_\${THENAME#lifted_unsorted_}
- gt gff3 -tidy -sort -retainids <(cat ${gff} | grep -v "#") | grep -v "###" > srt_${gff}
+ cat ${gff} | grep -v "#" | gt gff3 -tidy -sort -retainids | grep -v "###" > srt_${gff}
 """
 }
 
-//process compare_gffs {
-//echo true
-//input:
-// file ogff from gffFile_2
-// file fgff from final_gff
-//script:
-//"""
-//diff ${ogff} ${fgff}
-//"""
-//}
+process compare_gffs {
+echo true
+input:
+ file ogff from gffFile_2
+ file fgff from final_gff
+script:
+"""
+cat ${ogff} | grep -v "#" | cut -f 3 | sort | uniq > feature_types.txt
+"""
+}
