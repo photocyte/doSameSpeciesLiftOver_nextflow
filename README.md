@@ -18,7 +18,7 @@ conda config --add channels conda-forge
 conda config --set channel_priority false
 conda install nextflow graphviz
 ```
-4. The script will dynamically install the rest of the conda dependencies
+4. The `doSameSpeciesLiftOver.nf` script will dynamically install the rest of the conda dependencies
 
 ### Example
 
@@ -32,3 +32,7 @@ nextflow run doSameSpeciesLiftOver.nf \
 -with-report examples/report.html \
 -with-dag examples/flowchart.svg
 ```
+
+### Workflow flowchart
+
+![Directed acyclic graph (DAG) for doSameSpeciesLiftOver_nextflow program execution](./examples/flowchart.svg)
