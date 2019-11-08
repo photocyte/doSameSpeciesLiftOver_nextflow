@@ -130,6 +130,7 @@ axtChain -linearGap=medium -faQ -faT -psl ${pslFile} ${oldFasta} ${newFasta} ${p
 process chainMerge {
 conda "ucsc-chainmergesort ucsc-chainsplit"
 //conda params.totalCondaEnvPath
+tag "$chainFile"
 input:
  file chainFile from chains.collect()
 
@@ -147,6 +148,7 @@ chainMergeSort ${chainFile} | chainSplit chainMerge stdin -lump=50
 process chainSort {
 conda "ucsc-chainsort"
 //conda params.totalCondaEnvPath
+tag "$chainFile"
 input:
  file chainFile from sortMergedChains.collectFile(name: 'all.chain')
 
@@ -162,10 +164,10 @@ chainSort all.chain all.sorted.chain
 process calculateChromInfo {
 conda "seqkit"
 //conda params.totalCondaEnvPath
+tag "$oldGenome and $newGenome"
 input:
  file oldGenome from oldGenome_2
  file newGenome from newGenome_1
-
 output:
  set file("${oldGenome}.chromInfo"),file("${newGenome}.chromInfo") into chromInfos
 script:
@@ -184,6 +186,7 @@ script:
 process chainNet {
 conda "ucsc-chainnet"
 //conda params.totalCondaEnvPath
+tag "$allSortedChain"
 input:
  file allSortedChain from allSortedChain_1
  set file(oldInfo),file(newInfo) from chromInfos
@@ -199,6 +202,7 @@ process produceLiftOverFile {
 conda "ucsc-netchainsubset"
 //conda params.totalCondaEnvPath
 publishDir './liftover_output/',mode:'copy',overwrite:true
+tag "$netFile & $allSortedChain_2"
 input:
  file netFile
  file allSortedChain_2
@@ -273,6 +277,7 @@ normalizedGff.combine(liftOverFile_2).set{ liftoverCmds }
 process ucsc_liftover {
 conda "ucsc-liftover"
 //conda params.totalCondaEnvPath
+tag "$gffFile & liftOverFile"
 input:
  set file(gffFile),file(liftOverFile) from liftoverCmds
 output:
@@ -287,6 +292,7 @@ ln -s ${gffFile} original_${gffFile}
 }
 
 process rescue_unlifted_features {
+tag "$unmapped_gff_ch2"
 input:
  file gffOriginal
  file ucsc_lifted_gff_ch2
@@ -419,6 +425,7 @@ script:
 
 process compare_gffs {
 echo true
+tag "$ogff vs. $fgff"
 input:
  file ogff from gffFile_2
  file fgff from final_gff

@@ -1,16 +1,16 @@
 task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
-4	3d/f6e251	35795	normalizeGff (Homo_sapiens.GRCh38_chr6-subset.84.gff3 by hg38-chr6-subseq1.fa)	COMPLETED	0	2019-11-08 16:19:12.281	918ms	449ms	17.1%	4 MB	29.1 MB	2 MB	279.7 KB
-3	1c/f6f763	36374	calculateChromInfo (1)	COMPLETED	0	2019-11-08 16:20:22.648	1.9s	610ms	20.9%	5 MB	60.9 MB	2.8 MB	2.4 KB
-1	b0/015db7	36974	convertFAto2bit_old (hg38-chr6-subseq1.fa)	COMPLETED	0	2019-11-08 16:20:28.758	1.5s	341ms	14.1%	3.3 MB	12.9 MB	1.5 MB	356.2 KB
-2	76/e08fec	36988	evenSmallerChunks (hg38-chr6-subseq2.1.fa)	COMPLETED	0	2019-11-08 16:20:28.936	1.3s	319ms	8.9%	3.3 MB	12.9 MB	1.5 MB	1.4 MB
-5	74/9ca060	38018	constructOocFile (hg38-chr6-subseq1.fa.2bit)	COMPLETED	0	2019-11-08 16:20:44.477	956ms	134ms	60.6%	3.3 MB	12.9 MB	492.3 KB	1.8 KB
-6	75/eab02b	38705	blat_align (hg38-chr6-subseq2.1.fa.subsplit.1.fa)	COMPLETED	0	2019-11-08 16:20:55.946	2m 12s	2m 11s	100.2%	92.5 MB	111.3 MB	1.9 MB	2.4 KB
-7	8b/6a767c	41326	axtChain (merged.psl)	COMPLETED	0	2019-11-08 16:23:22.875	892ms	133ms	53.6%	6.6 MB	36.4 MB	5.5 MB	2.1 KB
-8	5d/c55d56	41996	chainMerge	COMPLETED	0	2019-11-08 16:23:33.282	912ms	106ms	41.9%	3.2 MB	12.9 MB	129.5 KB	2.5 KB
-9	cb/9d5fc9	42695	chainSort (1)	COMPLETED	0	2019-11-08 16:23:45.215	808ms	95ms	27.2%	6.5 MB	36.4 MB	111.5 KB	1.8 KB
-10	55/907577	43353	chainNet (1)	COMPLETED	0	2019-11-08 16:23:55.417	950ms	121ms	28.3%	4.5 MB	36.2 MB	111.6 KB	2.1 KB
-11	c6/02f01a	44151	produceLiftOverFile (1)	COMPLETED	0	2019-11-08 16:24:05.466	999ms	108ms	24.7%	6.4 MB	36.4 MB	111.7 KB	1.8 KB
-12	35/c2cfb7	44824	ucsc_liftover (1)	COMPLETED	0	2019-11-08 16:24:17.410	1.1s	127ms	28.7%	4.2 MB	30 MB	252.4 KB	153.9 KB
-13	d0/2b9f89	45329	rescue_unlifted_features (1)	COMPLETED	0	2019-11-08 16:24:18.524	285ms	78ms	58.2%	8.8 MB	25.7 MB	734.9 KB	28.4 KB
-14	e7/dd1b32	46592	sort_gff (ucsc-lifted_target.Homo_sapiens.GRCh38_chr6-subset.84.gff3.gff3)	COMPLETED	0	2019-11-08 16:27:38.592	1.7s	696ms	8.5%	4.4 MB	34 MB	230.3 KB	83.5 KB
-15	c8/6e431a	47107	compare_gffs (1)	COMPLETED	0	2019-11-08 16:27:40.301	340ms	89ms	43.6%	3.3 MB	13 MB	505.2 KB	289.5 KB
+4	13/209143	18626	normalizeGff (Homo_sapiens.GRCh38_chr6-subset.84.gff3 by hg38-chr6-subseq1.fa)	COMPLETED	0	2019-11-08 15:02:57.611	554ms	364ms	-	-	-	-	-
+3	0c/183817	18685	calculateChromInfo (hg38-chr6-subseq1.fa and hg38-chr6-subseq2.fa)	COMPLETED	0	2019-11-08 15:03:02.520	548ms	1s	-	-	-	-	-
+2	4c/b0c2c6	18731	evenSmallerChunks (hg38-chr6-subseq2.1.fa)	COMPLETED	0	2019-11-08 15:03:03.348	2.2s	2s	-	-	-	-	-
+1	ad/542251	18739	convertFAto2bit_old (hg38-chr6-subseq1.fa)	COMPLETED	0	2019-11-08 15:03:03.485	2.2s	2s	-	-	-	-	-
+5	6b/fee96d	18834	constructOocFile (hg38-chr6-subseq1.fa.2bit)	COMPLETED	0	2019-11-08 15:03:10.360	658ms	1s	-	-	-	-	-
+6	06/203856	18896	blat_align (hg38-chr6-subseq2.1.fa.subsplit.1.fa)	COMPLETED	0	2019-11-08 15:03:15.413	50s	50s	-	-	-	-	-
+7	d2/b740ea	19007	axtChain (merged.psl)	COMPLETED	0	2019-11-08 15:04:09.644	1.3s	1s	-	-	-	-	-
+8	a4/6d4939	19076	chainMerge (merged.psl.chain)	COMPLETED	0	2019-11-08 15:04:15.662	1.1s	1s	-	-	-	-	-
+9	c4/68753a	19155	chainSort (all.chain)	COMPLETED	0	2019-11-08 15:04:22.369	1.1s	1s	-	-	-	-	-
+10	fe/b14b85	19216	chainNet (all.sorted.chain)	COMPLETED	0	2019-11-08 15:04:28.144	1.1s	1s	-	-	-	-	-
+11	88/fe0d23	19265	produceLiftOverFile (all.net & all.sorted.chain)	COMPLETED	0	2019-11-08 15:04:33.346	1s	1s	-	-	-	-	-
+12	b5/def808	19316	ucsc_liftover (target.Homo_sapiens.GRCh38_chr6-subset.84.gff3.gff3 & liftOverFile)	COMPLETED	0	2019-11-08 15:04:38.419	1.3s	1s	-	-	-	-	-
+13	12/2e2443	19363	rescue_unlifted_features (unmapped_target.Homo_sapiens.GRCh38_chr6-subset.84.gff3.gff3)	COMPLETED	0	2019-11-08 15:04:39.699	346ms	83ms	-	-	-	-	-
+14	5d/b10156	19406	sort_gff (ucsc-lifted_target.Homo_sapiens.GRCh38_chr6-subset.84.gff3.gff3)	COMPLETED	0	2019-11-08 15:04:52.091	432ms	0ms	-	-	-	-	-
+15	91/6c7a2d	19451	compare_gffs (Homo_sapiens.GRCh38_chr6-subset.84.gff3 vs. srt_ucsc-lifted_target.Homo_sapiens.GRCh38_chr6-subset.84.gff3.gff3)	COMPLETED	0	2019-11-08 15:04:52.530	156ms	39ms	-	-	-	-	-
