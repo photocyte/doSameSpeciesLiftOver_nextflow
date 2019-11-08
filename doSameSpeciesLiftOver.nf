@@ -1,6 +1,6 @@
 //Inspired by: https://genome-source.gi.ucsc.edu/gitlist/kent.git/raw/master/src/hg/utils/automation/doSameSpeciesLiftOver.pl
-//And this: 
-//Also this: https://iamphioxus.org/2013/06/25/using-liftover-to-convert-genome-assembly-coordinates/
+//And this: https://iamphioxus.org/2013/06/25/using-liftover-to-convert-genome-assembly-coordinates/
+//Also this: https://github.com/wurmlab/flo
 
 //Should preinstall the conda environment, as otherwise the script just spends all its time
 //installing dependencies.
@@ -8,16 +8,16 @@
 //conda install ucsc-fatotwobit blat ucsc-fasplit ucsc-liftup ucsc-axtchain ucsc-chainmergesort ucsc-chainsplit ucsc-chainsort seqkit ucsc-chainnet ucsc-netchainsubset ucsc-liftover genometools gffutils
 
 
-params.old = "old.fasta"
-params.new = "new2.fasta"
+params.oldFasta = "old.fasta"
+params.newFasta = "new.fasta"
 params.gff = "example.gff3"
-params.splitDepth = 100000000 //number of sections per blat invocation. 100 for typical invocation (if chainMerge worked properly). Smaller for more parallelization. Larger to disable.
-params.splitSize = 100000000 //length of a section, in base pairs. 5000 bp is the maximum size allowed for blat -fastmap. Interacts with param.extra. Larger to disable.
+params.splitDepth = 1000000000 //number of sections per blat invocation. 100 for typical invocation (if chainMerge worked properly). Smaller for more parallelization. Larger to disable.
+params.splitSize = 1000000000 //length of a section, in base pairs. 5000 bp is the maximum size allowed for blat -fastmap. Interacts with param.extra. Larger to disable.
 params.recordSplit = 1 //Split MultiFasta into files with this many fasta records. Default = 1 .  Higher for less parallelization. 
-params.extra = 0 //Extra bases for splitFA for overlaps.  E.g. if splitsize is 2500, and extra is 2500, splitFA will make 5000 sections that overlap 2500 bp. 0 to disable.
+params.extraBases = 0 //Extra bases for splitFA for overlaps.  E.g. if splitsize is 2500, and extra is 2500, splitFA will make 5000 sections that overlap 2500 bp. 0 to disable.
 
-oldGenome = Channel.fromPath(params.old)
-newGenome = Channel.fromPath(params.new)
+oldGenome = Channel.fromPath(params.oldFasta)
+newGenome = Channel.fromPath(params.newFasta)
 gffFiles = params.gff.tokenize(",")
 gffFiles_ch = Channel.fromPath(gffFiles).flatten()
 gffFiles_ch.into{ gffFile_1 ; gffFile_2 }
@@ -29,8 +29,11 @@ newGenome.into { newGenome_1 ; newGenome_2 ; newGenome_3 }
 newGenome_2.splitFasta(by:params.recordSplit,file:true).set{fastaChunks}
 
 process convertFAto2bit_old {
-//    conda "ucsc-fatotwobit"
-    conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+    conda "ucsc-fatotwobit"
+//Alternatively, can preinstall all the requirements to a particular location:    
+//    conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+ 
+    tag "$fasta"
     input:
     file fasta from oldGenome_1
 
@@ -45,8 +48,9 @@ process convertFAto2bit_old {
 old_2bit.into{ old_2bit_1 ; old_2bit_2 }
 
 process constructOocFile {
-    //conda "blat"
-    conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+    conda "blat"
+//    conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+    tag "$old_2bit"
     input:
       file old_2bit from old_2bit_2
     output:
@@ -59,8 +63,8 @@ process constructOocFile {
 }
 
 process evenSmallerChunks {
-//conda "ucsc-fasplit"
-conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+conda "ucsc-fasplit"
+//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
 input:
  file fastaChunk from fastaChunks
 output:
@@ -68,7 +72,7 @@ output:
 tag "${fastaChunk}"
 script:
 """
-faSplit size ${fastaChunk} ${params.splitSize} ${fastaChunk}.subsplit -lift=${fastaChunk}.lft -oneFile -extra=${params.extra}
+faSplit size ${fastaChunk} ${params.splitSize} ${fastaChunk}.subsplit -lift=${fastaChunk}.lft -oneFile -extra=${params.extraBases}
 """
 }
 
@@ -83,8 +87,8 @@ subsplitFasta_liftUp.map{ values ->
 subFastaChunks.combine(old_2bit_1).combine(ooc).set{blatCmds}
 
 process blat_align {
-//conda "blat ucsc-fasplit ucsc-liftup"
-conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+conda "blat ucsc-fasplit ucsc-liftup"
+//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
 memory '4 GB'
 input:
  set file(originalFasta),file(liftupFile),file(fastaSubChunk),file(old_2bit),file(ooc) from blatCmds
@@ -107,8 +111,8 @@ liftUp -pslQ ${fastaSubChunk}.psl ${liftupFile} warn ${fastaSubChunk}.subsplit.p
 }
 
 process axtChain {
-//conda "ucsc-axtchain ucsc-fatotwobit"
-conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+conda "ucsc-axtchain ucsc-fatotwobit"
+//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
 input:
  file pslFile from axtChainCmds.collectFile(name:"merged.psl",keepHeader:true,skip:5)
  file oldFasta from oldGenome_3
@@ -124,8 +128,8 @@ axtChain -linearGap=medium -faQ -faT -psl ${pslFile} ${oldFasta} ${newFasta} ${p
 }
 
 process chainMerge {
-//conda "ucsc-chainmergesort ucsc-chainsplit"
-conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+conda "ucsc-chainmergesort ucsc-chainsplit"
+//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
 input:
  file chainFile from chains.collect()
 
@@ -141,8 +145,8 @@ chainMergeSort ${chainFile} | chainSplit chainMerge stdin -lump=50
 }
 
 process chainSort {
-//conda "ucsc-chainsort"
-conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+conda "ucsc-chainsort"
+//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
 input:
  file chainFile from sortMergedChains.collectFile(name: 'all.chain')
 
@@ -156,8 +160,8 @@ chainSort all.chain all.sorted.chain
 }
 
 process calculateChromInfo {
-//conda "seqkit"
-conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+conda "seqkit"
+//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
 input:
  file oldGenome from oldGenome_2
  file newGenome from newGenome_1
@@ -178,8 +182,8 @@ script:
 }
 
 process chainNet {
-//conda "ucsc-chainnet"
-conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+conda "ucsc-chainnet"
+//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
 input:
  file allSortedChain from allSortedChain_1
  set file(oldInfo),file(newInfo) from chromInfos
@@ -192,8 +196,8 @@ chainNet ${allSortedChain} ${oldInfo} ${newInfo} all.net /dev/null
 }
 
 process produceLiftOverFile {
-//conda "ucsc-netchainsubset"
-conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+conda "ucsc-netchainsubset"
+//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
 publishDir './liftover_output/',mode:'copy',overwrite:true
 input:
  file netFile
@@ -207,7 +211,7 @@ netChainSubset ${netFile} ${allSortedChain_2} final.liftOver
 }
 
 //process crossmap_liftover {
-//conda "crossmap=0.3.6"
+//conda "crossmap=0.3.7-2"
 //input:
 // file gffFile from gffFile_1
 // file liftOverFile from liftOverFile_1
@@ -228,6 +232,7 @@ gffFile_1.combine(oldGenome_4).set{normalizeCmds}
 
 process normalizeGff {
 publishDir './liftover_output/',mode:'copy',overwrite:true
+tag "$gff by $fasta"
 input:
  set file(gff),file(fasta) from normalizeCmds
 output:
@@ -266,8 +271,8 @@ fi
 normalizedGff.combine(liftOverFile_2).set{ liftoverCmds }
 
 process ucsc_liftover {
-//conda "ucsc-liftover"
-conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+conda "ucsc-liftover"
+//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
 input:
  set file(gffFile),file(liftOverFile) from liftoverCmds
 output:
@@ -394,8 +399,8 @@ for k in unmapped_ids.keys():
 
 process sort_gff {
 publishDir './liftover_output/',mode:'copy',overwrite:true
-//conda "genometools"
-conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+conda "genometools-genometools"
+//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
 input:
  file gff from ucsc_lifted_gff
  file unmapped from unmapped_gff
@@ -420,5 +425,6 @@ input:
 script:
 """
 cat ${ogff} | grep -v "#" | cut -f 3 | sort | uniq > feature_types.txt
+echo "Done with pipeline. Check the liftover_output folder"
 """
 }
