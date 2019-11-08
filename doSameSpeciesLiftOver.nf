@@ -31,7 +31,7 @@ newGenome_2.splitFasta(by:params.recordSplit,file:true).set{fastaChunks}
 process convertFAto2bit_old {
     conda "ucsc-fatotwobit"
 //Alternatively, can preinstall all the requirements to a particular location:    
-//    conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+//    conda params.totalCondaEnvPath
  
     tag "$fasta"
     input:
@@ -49,7 +49,7 @@ old_2bit.into{ old_2bit_1 ; old_2bit_2 }
 
 process constructOocFile {
     conda "blat"
-//    conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+//    conda params.totalCondaEnvPath
     tag "$old_2bit"
     input:
       file old_2bit from old_2bit_2
@@ -64,7 +64,7 @@ process constructOocFile {
 
 process evenSmallerChunks {
 conda "ucsc-fasplit"
-//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+//conda params.totalCondaEnvPath
 input:
  file fastaChunk from fastaChunks
 output:
@@ -88,7 +88,7 @@ subFastaChunks.combine(old_2bit_1).combine(ooc).set{blatCmds}
 
 process blat_align {
 conda "blat ucsc-fasplit ucsc-liftup"
-//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+//conda params.totalCondaEnvPath
 memory '4 GB'
 input:
  set file(originalFasta),file(liftupFile),file(fastaSubChunk),file(old_2bit),file(ooc) from blatCmds
@@ -112,7 +112,7 @@ liftUp -pslQ ${fastaSubChunk}.psl ${liftupFile} warn ${fastaSubChunk}.subsplit.p
 
 process axtChain {
 conda "ucsc-axtchain ucsc-fatotwobit"
-//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+//conda params.totalCondaEnvPath
 input:
  file pslFile from axtChainCmds.collectFile(name:"merged.psl",keepHeader:true,skip:5)
  file oldFasta from oldGenome_3
@@ -129,7 +129,7 @@ axtChain -linearGap=medium -faQ -faT -psl ${pslFile} ${oldFasta} ${newFasta} ${p
 
 process chainMerge {
 conda "ucsc-chainmergesort ucsc-chainsplit"
-//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+//conda params.totalCondaEnvPath
 input:
  file chainFile from chains.collect()
 
@@ -146,7 +146,7 @@ chainMergeSort ${chainFile} | chainSplit chainMerge stdin -lump=50
 
 process chainSort {
 conda "ucsc-chainsort"
-//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+//conda params.totalCondaEnvPath
 input:
  file chainFile from sortMergedChains.collectFile(name: 'all.chain')
 
@@ -161,7 +161,7 @@ chainSort all.chain all.sorted.chain
 
 process calculateChromInfo {
 conda "seqkit"
-//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+//conda params.totalCondaEnvPath
 input:
  file oldGenome from oldGenome_2
  file newGenome from newGenome_1
@@ -183,7 +183,7 @@ script:
 
 process chainNet {
 conda "ucsc-chainnet"
-//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+//conda params.totalCondaEnvPath
 input:
  file allSortedChain from allSortedChain_1
  set file(oldInfo),file(newInfo) from chromInfos
@@ -197,7 +197,7 @@ chainNet ${allSortedChain} ${oldInfo} ${newInfo} all.net /dev/null
 
 process produceLiftOverFile {
 conda "ucsc-netchainsubset"
-//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+//conda params.totalCondaEnvPath
 publishDir './liftover_output/',mode:'copy',overwrite:true
 input:
  file netFile
@@ -272,7 +272,7 @@ normalizedGff.combine(liftOverFile_2).set{ liftoverCmds }
 
 process ucsc_liftover {
 conda "ucsc-liftover"
-//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+//conda params.totalCondaEnvPath
 input:
  set file(gffFile),file(liftOverFile) from liftoverCmds
 output:
@@ -400,7 +400,7 @@ for k in unmapped_ids.keys():
 process sort_gff {
 publishDir './liftover_output/',mode:'copy',overwrite:true
 conda "genometools-genometools"
-//conda "/Users/tim/miniconda3/envs/doSameSpeciesLiftOver"
+//conda params.totalCondaEnvPath
 input:
  file gff from ucsc_lifted_gff
  file unmapped from unmapped_gff
