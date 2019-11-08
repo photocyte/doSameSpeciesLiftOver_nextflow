@@ -1,7 +1,7 @@
 # doSameSpeciesLiftOver_nextflow
-A NextFlow pipeline to lift over GFF files using the USCS liftover tools. 
+A NextFlow pipeline to lift over GFF files using the UCSC liftover tools. 
 
-Unlike many other liftOver pipelines, which use pre-computed liftover files, this script generates a custom liftover file by performing blat alignment of the provided FASTA files.
+Unlike many other liftOver pipelines, which use pre-computed liftover files (e.g. from UCSC), this script generates a custom liftover file by performing blat alignment of the provided "old" and "new" FASTA files.
 
 - Inspired by: [doSameSpeciesLiftOver.pl](https://genome-source.gi.ucsc.edu/gitlist/kent.git/raw/master/src/hg/utils/automation/doSameSpeciesLiftOver.pl)
 - And this: [using-liftover-to-convert-genome-assembly-coordinates/](https://iamphioxus.org/2013/06/25/using-liftover-to-convert-genome-assembly-coordinates/)
@@ -48,8 +48,12 @@ nextflow run doSameSpeciesLiftOver.nf \
 ```
 
 ## Known issues
-- Splitting of FASTA files to a sub-record level (e.g. using non-default values for `params.splitDepth` `params.splitSize` `params.recordSplit` and `params.extraBases`), leads to an incorrect liftover file. I believe the NextFlow logic is correct, so the problem is something I don't understand about blat, chainfiles, and/or liftover files.
-- blat isn't multithreaded. Could use [pblat](https://github.com/icebert/pblat) instead.
+1. Splitting of FASTA files to a sub-record level (e.g. using non-default values for `params.splitDepth` `params.splitSize` `params.recordSplit` and `params.extraBases`), leads to an incorrect liftover file. I believe the NextFlow logic is correct, so the problem is something I don't understand about blat, chainfiles, and/or liftover files.
+2. blat isn't multithreaded. Could use [pblat](https://github.com/icebert/pblat) instead.
+3. Without sub-record splitting, and without multithreading, the script can't take advantage of parallel computing resources very well. So, it takes a looong time for a whole genome liftover. The script is probably best used in a genome assembly tweaking context, where two versions of a single scaffold can be lifted over. It runs pretty fast in that context.
+4. Features which transverse "N" gaps, are oftentimes not lifted over properly. This is even with no sub-record splitting, and the `-extendThroughN` parameter for blat. The `rescue_unlifted_features` node attempts to fix some of the more trivial edge cases, but doesn't work super well.
+5. Could use [CrossMap](http://crossmap.sourceforge.net), to liftover things like .bam, .vcf files, but was quite buggy for me & couldn't get it to work.
+
 
 ## Workflow flowchart
 
