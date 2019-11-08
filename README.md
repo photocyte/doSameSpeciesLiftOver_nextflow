@@ -47,6 +47,10 @@ nextflow run doSameSpeciesLiftOver.nf \
 -with-dag examples/flowchart.svg
 ```
 
+## Known issues
+- Splitting of FASTA files to a sub-record level (e.g. using non-default values for `params.splitDepth` `params.splitSize` `params.recordSplit` and `params.extraBases`), leads to an incorrect liftover file. I believe the NextFlow logic is correct, so the problem is something I don't understand about blat, chainfiles, and/or liftover files.
+- blat isn't multithreaded. Could use [pblat](https://github.com/icebert/pblat) instead.
+
 ## Workflow flowchart
 
 ![Directed acyclic graph (DAG) for doSameSpeciesLiftOver_nextflow program execution](./examples/flowchart.svg)
