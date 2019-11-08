@@ -1,5 +1,7 @@
 # doSameSpeciesLiftOver_nextflow
-A NextFlow pipeline to lift over GFF files using the USCS liftover tools
+A NextFlow pipeline to lift over GFF files using the USCS liftover tools. 
+
+Unlike many other liftOver pipelines, which use pre-computed liftover files, this script generates a custom liftover file by performing blat alignment of the provided FASTA files.
 
 - Inspired by: [doSameSpeciesLiftOver.pl](https://genome-source.gi.ucsc.edu/gitlist/kent.git/raw/master/src/hg/utils/automation/doSameSpeciesLiftOver.pl)
 - And this: [using-liftover-to-convert-genome-assembly-coordinates/](https://iamphioxus.org/2013/06/25/using-liftover-to-convert-genome-assembly-coordinates/)
@@ -26,7 +28,10 @@ conda install nextflow graphviz
 4. The `doSameSpeciesLiftOver.nf` script will dynamically install the rest of the conda dependencies as needed, but the dependicies can be preinstalled if you'd like. Install using the below line and simply delete the conda directives from the `doSameSpeciesLiftOver.nf` script, or set the `totalCondaEnvPath` parameter to an environment with the dependencies.
 
 ```
-conda install ucsc-fatotwobit blat ucsc-fasplit ucsc-liftup ucsc-axtchain ucsc-chainmergesort ucsc-chainsplit ucsc-chainsort seqkit ucsc-chainnet ucsc-netchainsubset ucsc-liftover genometools-genometools gffutils
+conda install ucsc-fatotwobit blat ucsc-fasplit ucsc-liftup \
+ucsc-axtchain ucsc-chainmergesort ucsc-chainsplit ucsc-chainsort \
+seqkit ucsc-chainnet ucsc-netchainsubset ucsc-liftover \
+genometools-genometools gffutils
 ```
 
 ## Example
