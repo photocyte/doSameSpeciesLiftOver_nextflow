@@ -1,6 +1,25 @@
 # doSameSpeciesLiftOver_nextflow
 A NextFlow pipeline to lift over GFF files using the USCS liftover tools
 
+### Installation
+
+1. Install [Miniconda3](https://conda.io/en/latest/miniconda.html)
+2. Setup conda environment 
+
+```
+conda create --name doSameSpeciesLiftOver
+conda activate doSameSpeciesLiftOver
+```
+3. Install conda dependencies:  
+
+```
+conda config --add channels bioconda
+conda config --add channels conda-forge
+conda config --set channel_priority false
+conda install nextflow graphviz
+```
+4. The script will dynamically install the rest of the conda dependencies
+
 ### Example
 
 ```
