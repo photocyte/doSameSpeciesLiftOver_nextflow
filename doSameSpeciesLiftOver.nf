@@ -11,10 +11,10 @@
 params.oldFasta = "old.fasta"
 params.newFasta = "new.fasta"
 params.gff = "example.gff3"
-params.splitDepth = 1000000000 //number of sections per blat invocation. 100 for typical invocation (if chainMerge worked properly). Smaller for more parallelization. Larger to disable.
-params.splitSize = 1000000000 //length of a section, in base pairs. 5000 bp is the maximum size allowed for blat -fastmap. Interacts with param.extra. Larger to disable.
 params.recordSplit = 1 //Split MultiFasta into files with this many fasta records. Default = 1 .  Higher for less parallelization. 
-params.extraBases = 0 //Extra bases for splitFA for overlaps.  E.g. if splitsize is 2500, and extra is 2500, splitFA will make 5000 sections that overlap 2500 bp. 0 to disable.
+params.splitDepth = 1000000000 //number of subrecord chunks per blat invocation. 100 for typical invocation (if chainMerge worked properly). Smaller for more parallelization. Larger to disable.
+params.splitSize = 1000000000 //length of a section, in base pairs. 5000 bp is the maximum size allowed for blat -fastmap. Interacts with param.extraBases. Larger to disable.
+params.extraBases = 0 //Extra bases for splitFA for overlaps.  E.g. if splitSize is 2500, and extraBases is 2500, splitFA will make 5000 sections that overlap 2500 bp. 0 to disable.
 
 oldGenome = Channel.fromPath(params.oldFasta)
 newGenome = Channel.fromPath(params.newFasta)
@@ -62,7 +62,7 @@ process constructOocFile {
     """
 }
 
-process evenSmallerChunks {
+process subRecordChunks {
 conda "ucsc-fasplit"
 //conda params.totalCondaEnvPath
 input:
