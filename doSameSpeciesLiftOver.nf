@@ -20,7 +20,7 @@ oldGenome = Channel.fromPath(params.oldFasta)
 newGenome = Channel.fromPath(params.newFasta)
 gffFiles = params.gff.tokenize(",")
 gffFiles_ch = Channel.fromPath(gffFiles).flatten()
-gffFiles_ch.into{ gffFile_1 ; gffFile_2 }
+gffFiles_ch.into{ gffFile_1 ; gffFile_2 ; gffFile_3 }
 
 oldGenome.into { oldGenome_1 ; oldGenome_2 ; oldGenome_3 ; oldGenome_4 }
 newGenome.into { newGenome_1 ; newGenome_2 ; newGenome_3 }
@@ -58,7 +58,7 @@ process constructOocFile {
     script:
     """
     ##TODO Should follow protocol for repMatch using the "Construct ooc file" instructions from http://genomewiki.ucsc.edu/index.php/DoSameSpeciesLiftOver.pl
-    blat ${old_2bit} /dev/null /dev/null -tileSize=11 -makeOoc=${old_2bit}.ooc -repMatch=1024
+    blat ${old_2bit} /dev/null /dev/null -stepSize=1 -tileSize=11 -makeOoc=${old_2bit}.ooc -repMatch=4096
     """
 }
 
@@ -98,9 +98,9 @@ tag "${fastaSubChunk}"
 script:
 """
 if [ "${params.splitSize}" -lt "4000" ]; then
-  blat ${old_2bit} ${fastaSubChunk} -ooc=${ooc} -tileSize=11 -minIdentity=98 -noHead -minScore=100 -fastMap -extendThroughN ${fastaSubChunk}.subsplit.psl
+  blat ${old_2bit} ${fastaSubChunk} -ooc=${ooc} -maxIntron=0 -stepSize=1 -tileSize=11 -minIdentity=98 -noHead -minScore=100 -fastMap -extendThroughN ${fastaSubChunk}.subsplit.psl
 else
-  blat ${old_2bit} ${fastaSubChunk} -ooc=${ooc} -tileSize=11 -minIdentity=98 -noHead -minScore=100 -extendThroughN ${fastaSubChunk}.subsplit.psl
+  blat ${old_2bit} ${fastaSubChunk} -ooc=${ooc} -maxIntron=0 -stepSize=1 -tileSize=11 -minIdentity=98 -noHead -minScore=100 -extendThroughN ${fastaSubChunk}.subsplit.psl
 fi
 
 liftUp -pslQ ${fastaSubChunk}.psl ${liftupFile} warn ${fastaSubChunk}.subsplit.psl
@@ -207,30 +207,30 @@ input:
  file netFile
  file allSortedChain_2
 output:
- file "final.liftOver" into liftOverFile_2
+ file "final.liftOver" into liftOverFile_1, liftOverFile_2
 script:
 """
 netChainSubset ${netFile} ${allSortedChain_2} final.liftOver
 """
 }
 
-//process crossmap_liftover {
-//conda "crossmap=0.3.7-2"
-//input:
-// file gffFile from gffFile_1
-// file liftOverFile from liftOverFile_1
-//output:
-// file "crossmap-lifted_${gffFile}" into crossmap_lifted_gff
-//script:
-//"""
-//Crossmap.py -v
-//CrossMap.py gff ${liftOverFile} ${gffFile} lifted_unsorted_unfixed_${gffFile}
-//###Below line is to fix a bug in crossmap where it outputs coordinates as floats rather than integers
-//##Also bug where certain scores for features were set to null?
-//cat lifted_unsorted_unfixed_${gffFile} | sed \$'s/.0\t/\t/g' | sed \$'s/\t\t/\t0\t/g'> crossmap-lifted_${gffFile}
-//###
-//"""
-//}
+process crossmap_liftover {
+conda "crossmap=0.3.7"
+input:
+ file gffFile from gffFile_3
+ file liftOverFile from liftOverFile_1
+output:
+ file "crossmap-lifted_${gffFile}" into crossmap_lifted_gff
+script:
+"""
+crossmap.py -v
+crossmap.py gff ${liftOverFile} ${gffFile} crossmap-lifted_${gffFile}
+###Below line is to fix a bug in crossmap where it outputs coordinates as floats rather than integers
+##Also bug where certain scores for features were set to null?
+##cat lifted_unsorted_unfixed_${gffFile} | sed \$'s/.0\t/\t/g' | sed \$'s/\t\t/\t0\t/g'> crossmap-lifted_${gffFile}
+###
+"""
+}
 
 gffFile_1.combine(oldGenome_4).set{normalizeCmds}
 
