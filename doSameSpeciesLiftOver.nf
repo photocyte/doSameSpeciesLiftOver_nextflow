@@ -81,7 +81,7 @@ faSplit size ${fastaChunk} ${params.splitSize} ${fastaChunk}.subsplit -lift=${fa
 
 //Transpose is really the secret sauce below for getting the files setup properly.
 subsplitFasta_liftUp.map{ values ->
- subChunks = values[2].splitFasta(by:params.splitDepth,file:true)
+ subChunks = values[2].splitFasta(by:params.splitDepth,file:true) //split a subrecord multiFASTA into individual FASTAs
  return tuple(values[0],values[1],subChunks)}.transpose().set{ subFastaChunks }
 
 subFastaChunks.combine(old_2bit_1).combine(ooc).set{blatCmds}
