@@ -1,12 +1,14 @@
 //Inspired by: https://genome-source.gi.ucsc.edu/gitlist/kent.git/raw/master/src/hg/utils/automation/doSameSpeciesLiftOver.pl
 //And this: https://iamphioxus.org/2013/06/25/using-liftover-to-convert-genome-assembly-coordinates/
 //Also this: https://github.com/wurmlab/flo
+//This is related: https://bioconductor.org/packages/release/bioc/vignettes/CNEr/inst/doc/PairwiseWholeGenomeAlignment.html
 
 //Should preinstall the conda environment, as otherwise the script just spends all its time
 //installing dependencies.
 //conda activate doSameSpeciesLiftOver
 //conda install ucsc-fatotwobit blat ucsc-fasplit ucsc-liftup ucsc-axtchain ucsc-chainmergesort ucsc-chainsplit ucsc-chainsort seqkit ucsc-chainnet ucsc-netchainsubset ucsc-liftover genometools gffutils
 
+//-fastMap in blat: skip the time-consuming stage of merging alignment blocks that have gaps between them
 
 params.oldFasta = "old.fasta"
 params.newFasta = "new.fasta"
@@ -93,7 +95,7 @@ memory '4 GB'
 input:
  set file(originalFasta),file(liftupFile),file(fastaSubChunk),file(old_2bit),file(ooc) from blatCmds
 output:
- file "${fastaSubChunk}.psl" into axtChainCmds
+ file "${fastaSubChunk}.lifted.psl" into axtChainCmds
 tag "${fastaSubChunk}"
 script:
 """
@@ -103,10 +105,7 @@ else
   blat ${old_2bit} ${fastaSubChunk} -ooc=${ooc} -maxIntron=0 -stepSize=1 -tileSize=11 -minIdentity=98 -noHead -minScore=100 -extendThroughN ${fastaSubChunk}.subsplit.psl
 fi
 
-liftUp -pslQ ${fastaSubChunk}.psl ${liftupFile} warn ${fastaSubChunk}.subsplit.psl
-
-##cleanup some temporary files
-##rm -f ${fastaSubChunk}.subsplit.psl ${fastaSubChunk}.subsplit.fa
+liftUp -pslQ ${fastaSubChunk}.lifted.psl ${liftupFile} warn ${fastaSubChunk}.subsplit.psl
 """
 }
 
@@ -122,17 +121,29 @@ output:
 tag "${pslFile}"
 script:
 """
-axtChain -linearGap=medium -faQ -faT -psl ${pslFile} ${oldFasta} ${newFasta} ${pslFile}.chain
+axtChain -linearGap=loose -faQ -faT -psl ${pslFile} ${oldFasta} ${newFasta} ${pslFile}.chain
 """
 
 }
 
-process chainMerge {
+process chainSortFirst {
+conda "ucsc-chainsort"
+input:
+ file chainFile from chains
+output:
+ file "sorted.${chainFile}" into sorted_chains
+script:
+"""
+chainSort ${chainFile} sorted.${chainFile}
+"""
+}
+
+process chainMergeSort_chainSplit {
 conda "ucsc-chainmergesort ucsc-chainsplit"
 //conda params.totalCondaEnvPath
 tag "$chainFile"
 input:
- file chainFile from chains.collect()
+ file chainFile from sorted_chains.collect()
 
 output:
  file "chainMerge/*.chain" into sortMergedChains
@@ -145,7 +156,7 @@ chainMergeSort ${chainFile} | chainSplit chainMerge stdin -lump=50
 
 }
 
-process chainSort {
+process chainSortSecond {
 conda "ucsc-chainsort"
 //conda params.totalCondaEnvPath
 tag "$chainFile"
@@ -339,9 +350,11 @@ for l in handle.readlines():
     unmapped_ids[feature_ID]["right_extent_defined_by_child"] = False
     unmapped_ids[feature_ID]["left_child"] = None
     unmapped_ids[feature_ID]["right_child"] = None
+    unmapped_ids[feature_ID]["childs_scaffold"] = None
 handle.close()
 
 ##Find the child features.
+##Make a mapping of child IDs to parent IDs
 child_ids = []
 child_to_parent = dict()
 handle = open(original_path,"r")
@@ -361,6 +374,7 @@ for l in handle.readlines():
         continue
     start = int(splitline[3])
     end = int(splitline[4])
+    scaffold = splitline[0]
     if start == unmapped_ids[parent_ID]["start"]:
         unmapped_ids[parent_ID]["left_extent_defined_by_child"] = True
         unmapped_ids[parent_ID]["left_child"] = child_ID 
@@ -382,21 +396,30 @@ for l in handle.readlines():
     re_result = re.search("ID=(.+)[;\$]",splitline[8])
     if re_result == None:
         continue
+        print("skipping...")
     feature_ID = re_result.group(1)
     if feature_ID not in child_ids:
         continue
     start = int(splitline[3])
     end = int(splitline[4])
+    scaffold = splitline[0]
+    print(scaffold)
     if unmapped_ids[child_to_parent[feature_ID]]["left_child"] == feature_ID:
         unmapped_ids[child_to_parent[feature_ID]]["start"] = start
+        unmapped_ids[child_to_parent[feature_ID]]["childs_scaffold"] = scaffold
     if unmapped_ids[child_to_parent[feature_ID]]["right_child"] == feature_ID:
         unmapped_ids[child_to_parent[feature_ID]]["end"] = end
+        unmapped_ids[child_to_parent[feature_ID]]["childs_scaffold"] = scaffold
 handle.close()
 write_handle = open("rescued.gff","w")
 for k in unmapped_ids.keys():
      unmapped_line = unmapped_ids[k]["line"]
      unmapped_splitline = unmapped_line.split("\t")
-     newline = "\t".join([unmapped_splitline[0],unmapped_splitline[1],unmapped_splitline[2],str(unmapped_ids[k]["start"]),str(unmapped_ids[k]["end"]),unmapped_splitline[5],unmapped_splitline[6],unmapped_splitline[7],unmapped_splitline[8]])
+     if unmapped_ids[k]["childs_scaffold"] == None:
+         theScaffold = unmapped_splitline[0]
+     else:
+         theScaffold = unmapped_ids[k]["childs_scaffold"]
+     newline = "\t".join([theScaffold,unmapped_splitline[1],unmapped_splitline[2],str(unmapped_ids[k]["start"]),str(unmapped_ids[k]["end"]),unmapped_splitline[5],unmapped_splitline[6],unmapped_splitline[7],unmapped_splitline[8]])
      write_handle.write(newline)
 """
 }
