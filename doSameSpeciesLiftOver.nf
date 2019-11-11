@@ -315,7 +315,7 @@ script:
 #!/usr/bin/env python
 ##Oftentimes gene and mRNA features are not lifted over, as they presumably span regions that changed
 ##Or also possible, they span "NNNN" regions that blat just doesn't want to deal with
-##This node takes those unmapped gene/mRNA features, checks if they originally simply spanned the extent
+##This node takes those unmapped parent features, checks if they originally simply spanned the extent
 ##of their child features, and if so simply updates the unmapped extent to the new extent of the child features
 ##1) Load unmapped features. Get the ID(s)
 ##2) Load the original file, check if the extent of the feature is == to extent of the children
@@ -404,12 +404,11 @@ for l in handle.readlines():
     end = int(splitline[4])
     scaffold = splitline[0]
     print(scaffold)
+    unmapped_ids[child_to_parent[feature_ID]]["childs_scaffold"] = scaffold
     if unmapped_ids[child_to_parent[feature_ID]]["left_child"] == feature_ID:
         unmapped_ids[child_to_parent[feature_ID]]["start"] = start
-        unmapped_ids[child_to_parent[feature_ID]]["childs_scaffold"] = scaffold
     if unmapped_ids[child_to_parent[feature_ID]]["right_child"] == feature_ID:
         unmapped_ids[child_to_parent[feature_ID]]["end"] = end
-        unmapped_ids[child_to_parent[feature_ID]]["childs_scaffold"] = scaffold
 handle.close()
 write_handle = open("rescued.gff","w")
 for k in unmapped_ids.keys():
