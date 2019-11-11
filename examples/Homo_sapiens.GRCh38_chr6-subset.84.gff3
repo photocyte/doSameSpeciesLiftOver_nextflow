@@ -1,40 +1,40 @@
 ##gff-version 3
-##sequence-region   chr6 147508927 147953937
-chr6	ensembl_havana	gene	147508927	147737547	.	+	.	ID=gene:ENSG00000203727;Name=SAMD5;biotype=protein_coding;description=sterile alpha motif domain containing 5 [Source:HGNC Symbol;gene_id=ENSG00000203727;havana_gene=OTTHUMG00000015767;havana_version=2;logic_name=ensembl_havana_gene;version=3
-chr6	ensembl_havana	transcript	147508927	147570021	.	+	.	ID=transcript:ENST00000367474;Parent=gene:ENSG00000203727;Name=SAMD5-001;biotype=protein_coding;ccdsid=CCDS34548.1;havana_transcript=OTTHUMT00000042610;havana_version=1;tag=basic;transcript_id=ENST00000367474;transcript_support_level=2;version=1
-chr6	ensembl_havana	five_prime_UTR	147508927	147508928	.	+	.	Parent=transcript:ENST00000367474
-chr6	ensembl_havana	exon	147508927	147509387	.	+	.	Parent=transcript:ENST00000367474;Name=ENSE00001444606;constitutive=0;ensembl_end_phase=0;ensembl_phase=-1;exon_id=ENSE00001444606;rank=1;version=1
-chr6	ensembl_havana	CDS	147508929	147509387	.	+	0	ID=CDS:ENSP00000356444;Parent=transcript:ENST00000367474;protein_id=ENSP00000356444
-chr6	ensembl_havana	CDS	147564394	147564456	.	+	0	ID=CDS:ENSP00000356444;Parent=transcript:ENST00000367474;protein_id=ENSP00000356444
-chr6	ensembl_havana	exon	147564394	147570021	.	+	.	Parent=transcript:ENST00000367474;Name=ENSE00001444603;constitutive=0;ensembl_end_phase=-1;ensembl_phase=0;exon_id=ENSE00001444603;rank=2;version=1
-chr6	ensembl_havana	three_prime_UTR	147564457	147570021	.	+	.	Parent=transcript:ENST00000367474
-chr6	ensembl_havana	transcript	147509226	147737547	.	+	.	ID=transcript:ENST00000566741;Parent=gene:ENSG00000203727;Name=SAMD5-002;biotype=protein_coding;havana_transcript=OTTHUMT00000421265;havana_version=1;transcript_id=ENST00000566741;transcript_support_level=3;version=1
-chr6	havana	exon	147509226	147509387	.	+	.	Parent=transcript:ENST00000566741;Name=ENSE00002609743;constitutive=0;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSE00002609743;rank=1;version=1
-chr6	havana	CDS	147509226	147509387	.	+	0	ID=CDS:ENSP00000456528;Parent=transcript:ENST00000566741;protein_id=ENSP00000456528
-chr6	havana	CDS	147737317	147737448	.	+	0	ID=CDS:ENSP00000456528;Parent=transcript:ENST00000566741;protein_id=ENSP00000456528
-chr6	havana	exon	147737317	147737547	.	+	.	Parent=transcript:ENST00000566741;Name=ENSE00002607677;constitutive=0;ensembl_end_phase=-1;ensembl_phase=0;exon_id=ENSE00002607677;rank=2;version=1
-chr6	havana	three_prime_UTR	147737449	147737547	.	+	.	Parent=transcript:ENST00000566741
+##sequence-region   chr6 2 445012
+chr6	ensembl_havana	gene	2	228622	.	+	.	ID=gene:ENSG00000203727;Name=SAMD5;biotype=protein_coding;description=sterile alpha motif domain containing 5 [Source:HGNC Symbol;gene_id=ENSG00000203727;havana_gene=OTTHUMG00000015767;havana_version=2;logic_name=ensembl_havana_gene;version=3
+chr6	ensembl_havana	transcript	2	61096	.	+	.	ID=transcript:ENST00000367474;Parent=gene:ENSG00000203727;Name=SAMD5-001;biotype=protein_coding;ccdsid=CCDS34548.1;havana_transcript=OTTHUMT00000042610;havana_version=1;tag=basic;transcript_id=ENST00000367474;transcript_support_level=2;version=1
+chr6	ensembl_havana	five_prime_UTR	2	3	.	+	.	Parent=transcript:ENST00000367474
+chr6	ensembl_havana	exon	2	462	.	+	.	Parent=transcript:ENST00000367474;Name=ENSE00001444606;constitutive=0;ensembl_end_phase=0;ensembl_phase=-1;exon_id=ENSE00001444606;rank=1;version=1
+chr6	ensembl_havana	CDS	4	462	.	+	0	ID=CDS:ENSP00000356444;Parent=transcript:ENST00000367474;protein_id=ENSP00000356444
+chr6	ensembl_havana	CDS	55469	55531	.	+	0	ID=CDS:ENSP00000356444;Parent=transcript:ENST00000367474;protein_id=ENSP00000356444
+chr6	ensembl_havana	exon	55469	61096	.	+	.	Parent=transcript:ENST00000367474;Name=ENSE00001444603;constitutive=0;ensembl_end_phase=-1;ensembl_phase=0;exon_id=ENSE00001444603;rank=2;version=1
+chr6	ensembl_havana	three_prime_UTR	55532	61096	.	+	.	Parent=transcript:ENST00000367474
+chr6	ensembl_havana	transcript	301	228622	.	+	.	ID=transcript:ENST00000566741;Parent=gene:ENSG00000203727;Name=SAMD5-002;biotype=protein_coding;havana_transcript=OTTHUMT00000421265;havana_version=1;transcript_id=ENST00000566741;transcript_support_level=3;version=1
+chr6	havana	exon	301	462	.	+	.	Parent=transcript:ENST00000566741;Name=ENSE00002609743;constitutive=0;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSE00002609743;rank=1;version=1
+chr6	havana	CDS	301	462	.	+	0	ID=CDS:ENSP00000456528;Parent=transcript:ENST00000566741;protein_id=ENSP00000456528
+chr6	havana	CDS	228392	228523	.	+	0	ID=CDS:ENSP00000456528;Parent=transcript:ENST00000566741;protein_id=ENSP00000456528
+chr6	havana	exon	228392	228622	.	+	.	Parent=transcript:ENST00000566741;Name=ENSE00002607677;constitutive=0;ensembl_end_phase=-1;ensembl_phase=0;exon_id=ENSE00002607677;rank=2;version=1
+chr6	havana	three_prime_UTR	228524	228622	.	+	.	Parent=transcript:ENST00000566741
 ###
-chr6	havana	lincRNA_gene	147660703	147953937	.	+	.	ID=gene:ENSG00000227681;Name=RP11-307P5.1;biotype=lincRNA;gene_id=ENSG00000227681;havana_gene=OTTHUMG00000015769;havana_version=1;logic_name=havana;version=5
-chr6	havana	lincRNA	147660703	147953937	.	+	.	ID=transcript:ENST00000427015;Parent=gene:ENSG00000227681;Name=RP11-307P5.1-004;biotype=lincRNA;havana_transcript=OTTHUMT00000042615;havana_version=1;tag=basic;transcript_id=ENST00000427015;transcript_support_level=2;version=1
-chr6	havana	exon	147660703	147660819	.	+	.	Parent=transcript:ENST00000427015;Name=ENSE00001779070;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001779070;rank=1;version=1
-chr6	havana	exon	147947472	147947519	.	+	.	Parent=transcript:ENST00000427015;Name=ENSE00001652108;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001652108;rank=2;version=1
-chr6	havana	exon	147953330	147953937	.	+	.	Parent=transcript:ENST00000427015;Name=ENSE00001661882;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001661882;rank=3;version=1
-chr6	havana	lincRNA	147660737	147737556	.	+	.	ID=transcript:ENST00000432506;Parent=gene:ENSG00000227681;Name=RP11-307P5.1-001;biotype=lincRNA;havana_transcript=OTTHUMT00000042612;havana_version=1;transcript_id=ENST00000432506;transcript_support_level=2;version=5
-chr6	havana	exon	147660737	147660819	.	+	.	Parent=transcript:ENST00000432506;Name=ENSE00001771759;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001771759;rank=1;version=1
-chr6	havana	exon	147733729	147733811	.	+	.	Parent=transcript:ENST00000432506;Name=ENSE00001764598;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001764598;rank=2;version=1
-chr6	havana	exon	147737317	147737556	.	+	.	Parent=transcript:ENST00000432506;Name=ENSE00001595399;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001595399;rank=3;version=1
-chr6	havana	lincRNA	147676075	147737556	.	+	.	ID=transcript:ENST00000442094;Parent=gene:ENSG00000227681;Name=RP11-307P5.1-002;biotype=lincRNA;havana_transcript=OTTHUMT00000042613;havana_version=1;transcript_id=ENST00000442094;transcript_support_level=3;version=5
-chr6	havana	exon	147676075	147676155	.	+	.	Parent=transcript:ENST00000442094;Name=ENSE00001746511;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001746511;rank=1;version=1
-chr6	havana	exon	147733729	147733811	.	+	.	Parent=transcript:ENST00000442094;Name=ENSE00001764598;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001764598;rank=2;version=1
-chr6	havana	exon	147737317	147737556	.	+	.	Parent=transcript:ENST00000442094;Name=ENSE00001595399;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001595399;rank=3;version=1
-chr6	havana	lincRNA	147692398	147737556	.	+	.	ID=transcript:ENST00000434985;Parent=gene:ENSG00000227681;Name=RP11-307P5.1-003;biotype=lincRNA;havana_transcript=OTTHUMT00000042614;havana_version=1;tag=basic;transcript_id=ENST00000434985;transcript_support_level=2;version=1
-chr6	havana	exon	147692398	147692487	.	+	.	Parent=transcript:ENST00000434985;Name=ENSE00001616398;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001616398;rank=1;version=1
-chr6	havana	exon	147733729	147733811	.	+	.	Parent=transcript:ENST00000434985;Name=ENSE00001764598;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001764598;rank=2;version=1
-chr6	havana	exon	147737317	147737556	.	+	.	Parent=transcript:ENST00000434985;Name=ENSE00001595399;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001595399;rank=3;version=1
+chr6	havana	lincRNA_gene	151778	445012	.	+	.	ID=gene:ENSG00000227681;Name=RP11-307P5.1;biotype=lincRNA;gene_id=ENSG00000227681;havana_gene=OTTHUMG00000015769;havana_version=1;logic_name=havana;version=5
+chr6	havana	lincRNA	151778	445012	.	+	.	ID=transcript:ENST00000427015;Parent=gene:ENSG00000227681;Name=RP11-307P5.1-004;biotype=lincRNA;havana_transcript=OTTHUMT00000042615;havana_version=1;tag=basic;transcript_id=ENST00000427015;transcript_support_level=2;version=1
+chr6	havana	exon	151778	151894	.	+	.	Parent=transcript:ENST00000427015;Name=ENSE00001779070;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001779070;rank=1;version=1
+chr6	havana	exon	438547	438594	.	+	.	Parent=transcript:ENST00000427015;Name=ENSE00001652108;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001652108;rank=2;version=1
+chr6	havana	exon	444405	445012	.	+	.	Parent=transcript:ENST00000427015;Name=ENSE00001661882;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001661882;rank=3;version=1
+chr6	havana	lincRNA	151812	228631	.	+	.	ID=transcript:ENST00000432506;Parent=gene:ENSG00000227681;Name=RP11-307P5.1-001;biotype=lincRNA;havana_transcript=OTTHUMT00000042612;havana_version=1;transcript_id=ENST00000432506;transcript_support_level=2;version=5
+chr6	havana	exon	151812	151894	.	+	.	Parent=transcript:ENST00000432506;Name=ENSE00001771759;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001771759;rank=1;version=1
+chr6	havana	exon	224804	224886	.	+	.	Parent=transcript:ENST00000432506;Name=ENSE00001764598;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001764598;rank=2;version=1
+chr6	havana	exon	228392	228631	.	+	.	Parent=transcript:ENST00000432506;Name=ENSE00001595399;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001595399;rank=3;version=1
+chr6	havana	lincRNA	167150	228631	.	+	.	ID=transcript:ENST00000442094;Parent=gene:ENSG00000227681;Name=RP11-307P5.1-002;biotype=lincRNA;havana_transcript=OTTHUMT00000042613;havana_version=1;transcript_id=ENST00000442094;transcript_support_level=3;version=5
+chr6	havana	exon	167150	167230	.	+	.	Parent=transcript:ENST00000442094;Name=ENSE00001746511;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001746511;rank=1;version=1
+chr6	havana	exon	224804	224886	.	+	.	Parent=transcript:ENST00000442094;Name=ENSE00001764598;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001764598;rank=2;version=1
+chr6	havana	exon	228392	228631	.	+	.	Parent=transcript:ENST00000442094;Name=ENSE00001595399;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001595399;rank=3;version=1
+chr6	havana	lincRNA	183473	228631	.	+	.	ID=transcript:ENST00000434985;Parent=gene:ENSG00000227681;Name=RP11-307P5.1-003;biotype=lincRNA;havana_transcript=OTTHUMT00000042614;havana_version=1;tag=basic;transcript_id=ENST00000434985;transcript_support_level=2;version=1
+chr6	havana	exon	183473	183562	.	+	.	Parent=transcript:ENST00000434985;Name=ENSE00001616398;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001616398;rank=1;version=1
+chr6	havana	exon	224804	224886	.	+	.	Parent=transcript:ENST00000434985;Name=ENSE00001764598;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001764598;rank=2;version=1
+chr6	havana	exon	228392	228631	.	+	.	Parent=transcript:ENST00000434985;Name=ENSE00001595399;constitutive=0;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001595399;rank=3;version=1
 ###
-chr6	havana	lincRNA_gene	147741434	147743324	.	-	.	ID=gene:ENSG00000226249;Name=RP11-307P5.2;biotype=lincRNA;gene_id=ENSG00000226249;havana_gene=OTTHUMG00000015768;havana_version=1;logic_name=havana;version=1
-chr6	havana	lincRNA	147741434	147743324	.	-	.	ID=transcript:ENST00000448909;Parent=gene:ENSG00000226249;Name=RP11-307P5.2-001;biotype=lincRNA;havana_transcript=OTTHUMT00000042611;havana_version=1;tag=basic;transcript_id=ENST00000448909;transcript_support_level=3;version=1
-chr6	havana	exon	147741434	147741884	.	-	.	Parent=transcript:ENST00000448909;Name=ENSE00001690821;constitutive=1;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001690821;rank=2;version=1
-chr6	havana	exon	147743173	147743324	.	-	.	Parent=transcript:ENST00000448909;Name=ENSE00001674426;constitutive=1;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001674426;rank=1;version=1
+chr6	havana	lincRNA_gene	232509	234399	.	-	.	ID=gene:ENSG00000226249;Name=RP11-307P5.2;biotype=lincRNA;gene_id=ENSG00000226249;havana_gene=OTTHUMG00000015768;havana_version=1;logic_name=havana;version=1
+chr6	havana	lincRNA	232509	234399	.	-	.	ID=transcript:ENST00000448909;Parent=gene:ENSG00000226249;Name=RP11-307P5.2-001;biotype=lincRNA;havana_transcript=OTTHUMT00000042611;havana_version=1;tag=basic;transcript_id=ENST00000448909;transcript_support_level=3;version=1
+chr6	havana	exon	232509	232959	.	-	.	Parent=transcript:ENST00000448909;Name=ENSE00001690821;constitutive=1;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001690821;rank=2;version=1
+chr6	havana	exon	234248	234399	.	-	.	Parent=transcript:ENST00000448909;Name=ENSE00001674426;constitutive=1;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001674426;rank=1;version=1
 ###
