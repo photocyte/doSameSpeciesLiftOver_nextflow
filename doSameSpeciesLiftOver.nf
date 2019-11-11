@@ -392,13 +392,15 @@ handle = open(lifted_path,"r")
 for l in handle.readlines():
     if l[0] == "#":
         continue
+        print("skipping due to comment line...")
     splitline = l.split("\t")
     re_result = re.search("ID=(.+)[;\$]",splitline[8])
     if re_result == None:
         continue
-        print("skipping...")
+        print("skipping due to no ID found...")
     feature_ID = re_result.group(1)
     if feature_ID not in child_ids:
+        print("skipping due to feature_ID not in child_ids...")
         continue
     start = int(splitline[3])
     end = int(splitline[4])
