@@ -1,4 +1,15 @@
 # doSameSpeciesLiftOver_nextflow
+
+# **!!Deprecated!! see note below**
+
+I’d recommend using either the “Flo” pipeline https://github.com/wurmlab/flo or Liftoff https://github.com/agshumate/Liftoff 
+
+This Nextflow pipeline was never really that robust. 
+
+See here for more details if interested: https://genomic.social/@photocyte/112255774455268103
+
+---
+
 A NextFlow pipeline to lift over GFF files using the UCSC liftover tools. 
 
 Unlike many other liftOver pipelines, which use pre-computed liftover files (e.g. from UCSC), this script generates a custom liftover file by performing blat alignment of the provided "old" and "new" FASTA files.
